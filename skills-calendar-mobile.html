@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SkillTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #fdf6f0;
+  --bg2: #f7ece2;
+  --surface: #ffffff;
+  --surface2: #fef0e8;
+  --border: #eaddd0;
+  --border2: #d4b8a5;
+  --accent: #c07a5a;
+  --accent-light: #f0c5ae;
+  --pink: #f4b8c8;
+  --pink-soft: #fde8ef;
+  --pink-deep: #e0849e;
+  --brown: #7a4f3a;
+  --brown-light: #a67860;
+  --text: #3d2b1f;
+  --text2: #7a5c4a;
+  --muted: #b89a8a;
+  --streak: #e0849e;
+  --white: #ffffff;
+  --nav-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App shell ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Petal bg */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  max-width: 430px;
+  margin: 0 auto;
+  background:
+    radial-gradient(ellipse 80% 40% at 20% 0%, #fce4d670 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 90%, #f9d4e260 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Top bar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--brown);
+  font-style: italic;
+}
+.topbar-title span { color: var(--pink-deep); font-style: normal; }
+
+.topbar-actions { display: flex; gap: 0.4rem; }
+
+.icon-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text2);
+  transition: background 0.15s, border-color 0.15s;
+}
+.icon-btn:active { background: var(--bg2); }
+
+/* ── Screens ── */
+.screens {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 1.1rem calc(var(--nav-h) + var(--safe-bottom) + 1rem);
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.screen.active { display: block; opacity: 1; }
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  box-shadow: 0 2px 10px #d4a08818;
+}
+
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--brown);
+  font-style: italic;
+  margin-bottom: 0.65rem;
+  display: block;
+}
+
+/* ── Add skill ── */
+.add-skill-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.add-skill-bar input {
+  flex: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  padding: 0.65rem 1rem;
+  border-radius: 24px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.add-skill-bar input:focus { border-color: var(--accent); }
+.add-skill-bar input::placeholder { color: var(--muted); }
+
+.btn {
+  background: var(--accent);
+  color: var(--white);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.65rem 1.1rem;
+  border-radius: 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn:active { background: var(--brown); transform: scale(0.97); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1.5px solid var(--border2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  padding: 0.55rem 1rem;
+  border-radius: 24px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-ghost:active { color: var(--pink-deep); border-color: var(--pink-deep); }
+
+/* ── Skill cards ── */
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+
+.skill-row {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px #d4a08812;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.skill-main {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+}
+
+.skill-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.skill-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-streak { font-size: 0.72rem; color: var(--streak); font-weight: 500; white-space: nowrap; }
+.skill-pct { font-size: 0.7rem; color: var(--muted); min-width: 34px; text-align: right; }
+
+.delete-btn {
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font-size: 1rem; padding: 0.3rem 0.45rem;
+  border-radius: 50%; line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  touch-action: manipulation;
+}
+.delete-btn:active { color: var(--pink-deep); background: #f9d4e235; }
+
+.skill-progress-wrap { height: 5px; background: var(--bg2); }
+.skill-progress-bar { height: 100%; border-radius: 0 3px 0 0; transition: width 0.5s ease; }
+
+.empty-skills {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  border: 1.5px dashed var(--border2);
+  border-radius: 14px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* ── Calendar screen ── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.month-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--brown);
+  font-style: italic;
+  flex: 1;
+  text-align: center;
+}
+
+.nav-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--brown-light);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem;
+  transition: all 0.15s;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+.nav-btn:active { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+
+.today-pill {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.75rem;
+  background: var(--pink-soft);
+  border: 1.5px solid var(--pink);
+  color: var(--pink-deep);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.today-pill:active { background: var(--pink); }
+
+/* Calendar grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 1rem;
+}
+
+.day-header {
+  text-align: center;
+  padding: 0.4rem 0;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.day-cell {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  min-height: 72px;
+  padding: 0.4rem 0.3rem 0.3rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.day-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+.day-cell.today { border-color: var(--pink-deep); background: var(--pink-soft); }
+.day-cell.today .day-num { color: var(--pink-deep); font-weight: 700; }
+.day-cell:not(.empty):active { border-color: var(--accent-light); }
+
+.day-num { font-size: 0.68rem; color: var(--text2); font-weight: 500; line-height: 1; margin-bottom: 1px; }
+
+.skill-dots { display: flex; flex-wrap: wrap; gap: 2px; flex: 1; align-content: flex-start; }
+
+.skill-dot {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.5rem;
+  transition: transform 0.1s;
+  flex-shrink: 0;
+}
+.skill-dot:active { transform: scale(0.88); }
+.skill-dot.done { border-color: transparent; }
+.skill-dot:not(.done) { border-color: currentColor; background: transparent; }
+
+.note-pip {
+  position: absolute;
+  bottom: 3px; right: 4px;
+  font-size: 0.55rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  opacity: 0.55;
+}
+.day-cell.has-note .note-pip { opacity: 1; }
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Heatmap screen ── */
+.heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 0.5rem; }
+
+.heatmap-month-labels {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 4px;
+  font-size: 0.6rem;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  width: max-content;
+}
+
+.heat-cell {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.heat-cell[data-level="1"] { background: var(--accent-light); }
+.heat-cell[data-level="2"] { background: #e8a090; }
+.heat-cell[data-level="3"] { background: var(--pink); }
+.heat-cell[data-level="4"] { background: var(--pink-deep); }
+
+.heat-legend {
+  display: flex; gap: 5px; align-items: center;
+  margin-top: 0.75rem;
+  font-size: 0.62rem; color: var(--muted);
+}
+.heat-swatch {
+  width: 11px; height: 11px;
+  border-radius: 2px;
+}
+
+/* ── Export / Data screen ── */
+.data-section {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 6px #d4a08812;
+}
+.data-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: var(--brown);
+  font-style: italic;
+  margin-bottom: 0.85rem;
+}
+.data-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.danger-btn {
+  background: transparent;
+  color: var(--pink-deep);
+  border: 1.5px solid var(--pink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-radius: 24px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+.danger-btn:active { background: var(--pink-soft); }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  background: var(--surface);
+  border-top: 1.5px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 0.6rem;
+  z-index: 100;
+  box-shadow: 0 -4px 20px #c07a5a15;
+}
+
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 0.3rem 1rem;
+  border-radius: 12px;
+  border: none;
+  background: none;
+  transition: background 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-tab:active { background: var(--bg2); }
+
+.nav-icon { font-size: 1.3rem; line-height: 1; transition: transform 0.2s; }
+.nav-tab.active .nav-icon { transform: scale(1.15); }
+
+.nav-label {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: color 0.15s;
+}
+.nav-tab.active .nav-label { color: var(--pink-deep); font-weight: 600; }
+
+/* ── Note modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #3d2b1f55;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  backdrop-filter: blur(4px);
+  animation: fadeOverlay 0.2s ease;
+}
+@keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 1.5rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  width: 100%;
+  box-shadow: 0 -8px 40px #7a4f3a25;
+  animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 0 auto 1.25rem;
+}
+
+.modal h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--brown);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.modal textarea {
+  width: 100%;
+  min-height: 110px;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 0.85rem;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal textarea:focus { border-color: var(--accent); }
+
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.modal-actions .btn { flex: 1; text-align: center; padding: 0.75rem; font-size: 0.85rem; }
+.modal-actions .btn-ghost { flex: 1; text-align: center; padding: 0.75rem; font-size: 0.85rem; }
+
+/* Screen-specific top padding */
+#screen-home { padding-top: 0.5rem; }
+#screen-calendar { padding-top: 0.5rem; }
+#screen-heatmap { padding-top: 0.75rem; }
+#screen-data { padding-top: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-title">Skill<span>Track</span></div>
+    <div class="topbar-actions">
+      <div class="icon-btn" onclick="showScreen('screen-data')" title="Data & Export">⚙️</div>
+    </div>
+  </div>
+
+  <!-- Screens -->
+  <div class="screens">
+
+    <!-- 🏠 Home -->
+    <div class="screen active" id="screen-home">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">Total Checks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-label">Best Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-today">0</div>
+          <div class="stat-label">Done Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-skills">0</div>
+          <div class="stat-label">Skills</div>
+        </div>
+      </div>
+
+      <span class="section-label">Your Skills</span>
+      <div class="add-skill-bar">
+        <input type="text" id="skill-input" placeholder="e.g. Reading, Yoga…" maxlength="20" />
+        <button class="btn" onclick="addSkill()">+ Add</button>
+      </div>
+      <div class="skills-list" id="skills-list">
+        <div class="empty-skills">No skills yet<br>Add one above to begin your journey ✨</div>
+      </div>
+    </div>
+
+    <!-- 📅 Calendar -->
+    <div class="screen" id="screen-calendar">
+      <div class="cal-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+        <div class="month-title" id="month-title"></div>
+        <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button>
+        <button class="today-pill" onclick="goToToday()">Today</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <!-- 🔥 Heatmap -->
+    <div class="screen" id="screen-heatmap">
+      <span class="section-label">Consistency Heatmap</span>
+      <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.75rem">Scroll right → last 6 months</p>
+      <div class="heatmap-wrap">
+        <div class="heatmap-month-labels" id="heatmap-labels"></div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+      <div class="heat-legend">
+        <span>Less</span>
+        <div class="heat-swatch" style="background:var(--bg2)"></div>
+        <div class="heat-swatch" style="background:var(--accent-light)"></div>
+        <div class="heat-swatch" style="background:#e8a090"></div>
+        <div class="heat-swatch" style="background:var(--pink)"></div>
+        <div class="heat-swatch" style="background:var(--pink-deep)"></div>
+        <span>More</span>
+      </div>
+    </div>
+
+    <!-- ⚙️ Data -->
+    <div class="screen" id="screen-data">
+      <span class="section-label">Export & Data</span>
+      <div class="data-section">
+        <h3>Download your data</h3>
+        <div class="data-btns">
+          <button class="btn" onclick="exportJSON()">📄 JSON</button>
+          <button class="btn" style="background:var(--pink-deep)" onclick="exportCSV()">📊 CSV</button>
+        </div>
+      </div>
+      <div class="data-section">
+        <h3>Reset</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5">Clear all skills, checks and notes. This cannot be undone.</p>
+        <button class="danger-btn" onclick="confirmReset()">🗑 Reset all data</button>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" id="tab-home" onclick="showScreen('screen-home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-tab" id="tab-calendar" onclick="showScreen('screen-calendar')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Calendar</span>
+    </button>
+    <button class="nav-tab" id="tab-heatmap" onclick="showScreen('screen-heatmap')">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label">Streak</span>
+    </button>
+    <button class="nav-tab" id="tab-data" onclick="showScreen('screen-data')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Data</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- Note modal -->
+<div class="modal-overlay" id="note-modal" style="display:none" onclick="closeNoteIfOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="note-modal-title">Note</h3>
+    <textarea id="note-textarea" placeholder="How did today go? What did you practise?"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeNote()">Cancel</button>
+      <button class="btn" onclick="saveNote()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Palette ──
+const COLORS = [
+  '#e0849e','#c07a5a','#d4a0b0','#a67860','#f4b8c8',
+  '#b07050','#d4889e','#8a6050','#e8a090','#c89060'
+];
+
+// ── State ──
+let state = JSON.parse(localStorage.getItem('skilltrack_m') || 'null') || {
+  skills: [], checks: {}, notes: {}, nextId: 1,
+  view: { year: new Date().getFullYear(), month: new Date().getMonth() }
+};
+let noteDate = null;
+
+function save() { localStorage.setItem('skilltrack_m', JSON.stringify(state)); }
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Nav ──
+const screenMap = {
+  'screen-home': 'tab-home',
+  'screen-calendar': 'tab-calendar',
+  'screen-heatmap': 'tab-heatmap',
+  'screen-data': 'tab-data'
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabId = screenMap[id];
+  if (tabId) document.getElementById(tabId).classList.add('active');
+  if (id === 'screen-heatmap') renderHeatmap();
+}
+
+// ── Skills ──
+function addSkill() {
+  const input = document.getElementById('skill-input');
+  const name = input.value.trim();
+  if (!name) return;
+  state.skills.push({ id: state.nextId++, name, color: COLORS[state.skills.length % COLORS.length] });
+  input.value = '';
+  save(); render();
+}
+
+document.getElementById('skill-input').addEventListener('keydown', e => { if (e.key === 'Enter') addSkill(); });
+
+function deleteSkill(id) {
+  if (!confirm('Remove this skill?')) return;
+  state.skills = state.skills.filter(s => s.id !== id);
+  for (const d in state.checks) delete state.checks[d][id];
+  save(); render();
+}
+
+function getStreak(skillId) {
+  let streak = 0, d = new Date();
+  while (true) {
+    const k = dateKey(d);
+    if (state.checks[k] && state.checks[k][skillId]) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+function getMonthPct(skillId) {
+  const { year, month } = state.view;
+  const today = new Date();
+  const cap = (year === today.getFullYear() && month === today.getMonth()) ? today.getDate() : new Date(year, month+1, 0).getDate();
+  let done = 0;
+  for (let d = 1; d <= cap; d++) {
+    const k = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (state.checks[k] && state.checks[k][skillId]) done++;
+  }
+  return cap === 0 ? 0 : Math.round((done/cap)*100);
+}
+
+function renderSkills() {
+  const list = document.getElementById('skills-list');
+  if (state.skills.length === 0) {
+    list.innerHTML = '<div class="empty-skills">No skills yet<br>Add one above to begin your journey ✨</div>';
+    return;
+  }
+  list.innerHTML = state.skills.map(s => {
+    const streak = getStreak(s.id);
+    const pct = getMonthPct(s.id);
+    return `
+    <div class="skill-row">
+      <div class="skill-main">
+        <div class="skill-color-dot" style="background:${s.color}"></div>
+        <span class="skill-name">${esc(s.name)}</span>
+        ${streak > 0 ? `<span class="skill-streak">🌸 ${streak}d</span>` : ''}
+        <span class="skill-pct">${pct}%</span>
+        <button class="delete-btn" onclick="deleteSkill(${s.id})">✕</button>
+      </div>
+      <div class="skill-progress-wrap">
+        <div class="skill-progress-bar" style="width:${pct}%;background:${s.color}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Calendar ──
+function changeMonth(dir) {
+  state.view.month += dir;
+  if (state.view.month > 11) { state.view.month = 0; state.view.year++; }
+  if (state.view.month < 0)  { state.view.month = 11; state.view.year--; }
+  save(); renderCalendar(); renderSkills();
+}
+
+function goToToday() {
+  const n = new Date();
+  state.view = { year: n.getFullYear(), month: n.getMonth() };
+  save(); renderCalendar();
+}
+
+function toggleCheck(dateStr, skillId, e) {
+  e.stopPropagation();
+  if (!state.checks[dateStr]) state.checks[dateStr] = {};
+  state.checks[dateStr][skillId] = !state.checks[dateStr][skillId];
+  save(); renderCalendar(); renderSkills(); updateStats();
+}
+
+function renderCalendar() {
+  const { year, month } = state.view;
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('month-title').textContent = `${MONTHS[month]} ${year}`;
+
+  const grid = document.getElementById('calendar-grid');
+  const todayKey = dateKey(new Date());
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  let html = ['S','M','T','W','T','F','S'].map(d => `<div class="day-header">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += `<div class="day-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    const key = dateKey(dt);
+    const isToday = key === todayKey;
+    const dayChecks = state.checks[key] || {};
+    const hasNote = !!(state.notes[key] && state.notes[key].trim());
+
+    let dots = '';
+    if (state.skills.length > 0) {
+      dots = `<div class="skill-dots">` + state.skills.map(s => {
+        const done = !!dayChecks[s.id];
+        const bg = done ? s.color : 'transparent';
+        const color = done ? s.color : s.color + '90';
+        return `<div class="skill-dot${done?' done':''}"
+          style="background:${bg};color:${color};border-color:${done?'transparent':s.color+'70'}"
+          onclick="toggleCheck('${key}',${s.id},event)"
+          title="${esc(s.name)}">
+          ${done ? '✓' : ''}
+        </div>`;
+      }).join('') + `</div>`;
+    }
+
+    html += `
+      <div class="day-cell${isToday?' today':''}${hasNote?' has-note':''}">
+        <div class="day-num">${d}</div>
+        ${dots}
+        <span class="note-pip" onclick="openNote(event,'${key}',${d})">${hasNote?'📝':'·'}</span>
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = state.skills.map(s =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${esc(s.name)}</div>`
+  ).join('');
+}
+
+// ── Notes ──
+function openNote(e, dateStr, dayNum) {
+  e.stopPropagation();
+  noteDate = dateStr;
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('note-modal-title').textContent = `${MONTHS[state.view.month]} ${dayNum}`;
+  document.getElementById('note-textarea').value = state.notes[dateStr] || '';
+  document.getElementById('note-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('note-textarea').focus(), 100);
+}
+
+function closeNote() {
+  document.getElementById('note-modal').style.display = 'none';
+  noteDate = null;
+}
+
+function closeNoteIfOutside(e) {
+  if (e.target.classList.contains('modal-overlay')) closeNote();
+}
+
+function saveNote() {
+  if (!noteDate) return;
+  const val = document.getElementById('note-textarea').value.trim();
+  if (val) state.notes[noteDate] = val;
+  else delete state.notes[noteDate];
+  save(); closeNote(); renderCalendar();
+}
+
+// ── Heatmap ──
+function renderHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  const labels = document.getElementById('heatmap-labels');
+  const today = new Date();
+  const numDays = 182;
+  const start = new Date(today);
+  start.setDate(start.getDate() - numDays + 1);
+
+  const maxSkills = Math.max(state.skills.length, 1);
+  let labelsHtml = '', gridHtml = '', lastMonth = -1, monthOffsets = [];
+  let cellCount = 0;
+
+  for (let i = 0; i < numDays; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const key = dateKey(d);
+    const checks = state.checks[key] || {};
+    const count = Object.values(checks).filter(Boolean).length;
+    const level = count === 0 ? 0 : count <= Math.ceil(maxSkills*0.25) ? 1 : count <= Math.ceil(maxSkills*0.5) ? 2 : count <= Math.ceil(maxSkills*0.75) ? 3 : 4;
+
+    if (d.getMonth() !== lastMonth) {
+      const mnames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      monthOffsets.push({ name: mnames[d.getMonth()], offset: cellCount });
+      lastMonth = d.getMonth();
+    }
+
+    gridHtml += `<div class="heat-cell" data-level="${level}" title="${key}: ${count} done"></div>`;
+    cellCount++;
+  }
+
+  // Build labels with approximate spacing
+  labelsHtml = monthOffsets.map((m, i) => {
+    const gap = i === 0 ? 0 : (monthOffsets[i].offset - monthOffsets[i-1].offset) * 16;
+    return `<span style="margin-left:${i===0?0:gap}px;white-space:nowrap">${m.name}</span>`;
+  }).join('');
+
+  labels.innerHTML = labelsHtml;
+  grid.innerHTML = gridHtml;
+}
+
+// ── Stats ──
+function updateStats() {
+  let total = 0;
+  for (const date in state.checks)
+    for (const id in state.checks[date])
+      if (state.checks[date][id]) total++;
+
+  let best = 0, cur = 0, prevDate = null;
+  for (const d of Object.keys(state.checks).sort()) {
+    const any = Object.values(state.checks[d]).some(Boolean);
+    if (!any) { cur = 0; prevDate = null; continue; }
+    cur = prevDate && (new Date(d)-new Date(prevDate))/86400000===1 ? cur+1 : 1;
+    best = Math.max(best, cur);
+    prevDate = d;
+  }
+
+  const todayKey = dateKey(new Date());
+  const todayDone = Object.values(state.checks[todayKey] || {}).filter(Boolean).length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-streak').textContent = best;
+  document.getElementById('stat-today').textContent = todayDone;
+  document.getElementById('stat-skills').textContent = state.skills.length;
+}
+
+// ── Export ──
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'skilltrack.json' });
+  a.click();
+}
+
+function exportCSV() {
+  const rows = [['Date','Skill','Done','Note']];
+  for (const date of Object.keys(state.checks).sort())
+    for (const s of state.skills) {
+      const done = !!(state.checks[date] && state.checks[date][s.id]);
+      rows.push([date, `"${s.name}"`, done?'1':'0', `"${(state.notes[date]||'').replace(/"/g,'""')}"`]);
+    }
+  const blob = new Blob([rows.map(r=>r.join(',')).join('\n')], { type: 'text/csv' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'skilltrack.csv' });
+  a.click();
+}
+
+function confirmReset() {
+  if (!confirm('Reset ALL data? Cannot be undone.')) return;
+  localStorage.removeItem('skilltrack_m');
+  state = { skills: [], checks: {}, notes: {}, nextId: 1, view: { year: new Date().getFullYear(), month: new Date().getMonth() } };
+  render();
+}
+
+// ── Render ──
+function render() { renderSkills(); renderCalendar(); updateStats(); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+render();
+</script>
+</body>
+</html>
